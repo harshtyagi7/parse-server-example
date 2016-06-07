@@ -6,6 +6,8 @@ var ParseServer = require('parse-server').ParseServer;
 var path = require('path');
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// databaseUri = 'mongodb://harshtyagi7:password123@ds051645.mlab.com:51645/fb_pages_data';
+databaseUri = 'mongodb://meet:meet123@52.77.197.88:27017/fbAnalytics';
 
 if (!databaseUri) {
   console.log('DATABASE_URI not specified, falling back to localhost.');
