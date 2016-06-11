@@ -93,7 +93,7 @@ Parse.Cloud.define("addPostsMinimal", function(request, response) {
         response.success({'Posts_Length:' : list.length});
     },
     error: function(error) {
-    	console.log("addPosts Error. error: " + error);
+    	console.log("addPosts Error. error: " , error);
         response.error('Posts Update Failed: ' + error);
     }
   });
@@ -133,7 +133,16 @@ Parse.Cloud.define("updatePostsMinimal", function(request, response) {
 	  	  posts.push(object);
 	      // console.log(object.id + ' - ' + "saved");
 	    }
-	    Parse.Object.saveAll(posts);
+	    Parse.Object.saveAll(posts, {
+		    success: function(list) {
+		        console.log("addPosts success. List length: " + list.length);
+		        response.success({'Posts_Length:' : list.length});
+		    },
+		    error: function(error) {
+		    	console.log("addPosts Error. error: " , error);
+		        response.error('Posts Update Failed: ' + error);
+		    }
+	    });
 	    response.success({'Posts_Length:' : results.length});
 	  },
 	  error: function(error) {
