@@ -151,4 +151,92 @@ Parse.Cloud.define("updatePostsMinimal", function(request, response) {
 	  }
   });
   
+	
+
+});
+
+
+Parse.Cloud.define("addPage", function(request, response) {
+	var payload = request.params;
+	var page_id = payload['pageID'];
+	response.success({'Page add request sent for pageID: ' : page_id});
+	var app_id = "639806029461655";
+	var app_secret = "0e67503d42fbed9ea3b992252ca1c0e1";
+	var access_token = app_id + "|" + app_secret;
+	var base = "https://graph.facebook.com/v2.6/"
+	var node = "/" + page_id
+	var parameters = "/?fields=category,category_list,country_page_likes,cover,current_location,description,engagement,fan_count,founded,general_info,website&access_token=" + (access_token)
+	var url = base + node + parameters
+
+	var FBPage = Parse.Object.extend("Pages");
+	var uploadData = {};
+	
+	console.log("Sending FB get request for pageID: " + page_id);
+    Parse.Cloud.httpRequest({
+        method: 'GET',
+        url: url,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        success: function(httpResponse) {
+        	uploadData = httpResponse.data;
+        	
+        	console.log("Page object created");
+        	// Check if page exists
+        	if (httpResponse.data['id']) {
+				var query = new Parse.Query(FBPage);
+				console.log("Query to check if page exists");
+				query.equalTo("pageID", page_id);
+				query.find({
+				  success: function(results) {
+				    if (results.length > 0) {
+				    	// Page already exists
+				    	console.log("Page exists! Return.");
+				    	return;
+				    }
+			    	console.log("Page does not exist. Create.");
+			    	var MyFBPage = Parse.Object.extend("Pages");
+			    	var fbPage = new MyFBPage();
+			    	for (key in uploadData) {
+			    		if (key == 'id') {
+			    			continue;
+			    		}
+			    		fbPage.set(key, uploadData[key]);
+		        	}
+		        	// fbPage.set('category', 'Fictional Character');
+        			// fbPage.set('description', 'Page Admins ~#SR #SS #HG');
+        			// fbPage.set('id', '305618449565617');
+        			fbPage.set('pageID', page_id);
+		        	fbPages = [];
+		        	fbPages.push(fbPage);
+				    fbPage.save(null, {
+					    success: function(fbPage) {
+					    	console.log("Page created");
+					        response.success('Page added');
+					    },
+					    error: function(error) {
+					    	console.log("addPage Error. error: " , error);
+					        response.error('Page Add Failed: ' + error);
+					    }
+				    });
+				    response.success('Page added:');
+				  },
+				  error: function(error) {
+				  	response.error('Page Query Failed');
+				    console.log("Error: " + error.code + " " + error.message);
+				  }
+				});	
+        	}
+            // console.log(httpResponse.text);
+            /*console.log(httpResponse.data);
+            console.log(httpResponse.body);
+            console.log(httpResponse.response);*/
+            response.success("Succsess");
+          },
+        error: function(httpResponse) {
+            console.error('Request failed with response status ' + httpResponse.status);
+            response.success("Error");
+          }
+    });
+
 });
